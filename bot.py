@@ -9,9 +9,8 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
 # --- SOZLAMALAR ---
-# Tokenni BotFather'dan yangilab qo'yganingiz ma'qul
 TOKEN = "7919823792:AAE0i-8p4A777M9zq70IxhTl2DE4-8VzV8Y"
-ADMIN_ID = 8323916383 
+ADMIN_ID = 8323916383
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=TOKEN)
@@ -23,7 +22,7 @@ class AdvisorForm(StatesGroup):
     savol = State()
 
 async def handle(request):
-    return web.Response(text="Maslahatchi boti faol!")
+    return web.Response(text="Bot faol!")
 
 def get_main_menu():
     builder = ReplyKeyboardBuilder()
@@ -44,14 +43,11 @@ def get_faq_buttons():
 
 @dp.message(Command("start"))
 async def start_cmd(message: types.Message):
-    await message.answer(
-        f"Assalomu alaykum, {message.from_user.full_name}!\nMen 6-maktab maslahatchisi botiman.",
-        reply_markup=get_main_menu()
-    )
+    await message.answer("Assalomu alaykum! Men 6-maktab maslahatchisi botiman.", reply_markup=get_main_menu())
 
 @dp.message(F.text == "⚡ Tezkor javoblar")
 async def show_faq(message: types.Message):
-    await message.answer("Sizni qiziqtirgan savolni tanlang:", reply_markup=get_faq_buttons())
+    await message.answer("Savolni tanlang:", reply_markup=get_faq_buttons())
 
 @dp.callback_query(F.data.startswith("faq_"))
 async def faq_answer(callback: types.CallbackQuery):
@@ -80,14 +76,13 @@ async def get_name(message: types.Message, state: FSMContext):
 
 @dp.message(AdvisorForm.savol)
 async def get_question(message: types.Message, state: FSMContext):
-    user_data = await state.get_data()
-    report = f"📩 YANGI MUROJAAT!\nYo'nalish: {user_data['yonalish']}\nKimdan: {user_data['ism']}\nMurojaat: {message.text}"
+    data = await state.get_data()
+    rep = f"📩 MUROJAAT!\nYo'nalish: {data['yonalish']}\nKimdan: {data['ism']}\nMatn: {message.text}"
     try:
-        await bot.send_message(ADMIN_ID, report)
+        await bot.send_message(ADMIN_ID, rep)
         await message.answer("Rahmat! Yuborildi.", reply_markup=get_main_menu())
-    except Exception as e:
-        logging.error(f"Xatolik: {e}")
-        await message.answer("Xatolik! Adminga xabar bormadi.")
+    except:
+        await message.answer("Xatolik! Adminga bormadi.", reply_markup=get_main_menu())
     await state.clear()
 
 async def main():
