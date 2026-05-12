@@ -7,7 +7,7 @@ from aiogram.filters import Command
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 # --- SOZLAMALAR ---
-TOKEN = "7919823792:AAEUnwzBf-J2h1a-EfSWijv3T_syrOxvZiM"
+TOKEN = "7919823792:AAEUnwzBf-J2h1a-EfSWijv3T_syrOxvZiM" 
 ADMIN_ID = 8323916383
 
 logging.basicConfig(level=logging.INFO)
@@ -15,81 +15,77 @@ bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
 async def handle(request):
-    return web.Response(text="AI-Maslahatchi boti faol!")
+    return web.Response(text="AI-Maslahatchi faol!")
 
-# --- DIZAYN: INLINE TUGMALAR ---
-def main_menu_inline():
+# --- TUGMALAR ---
+def main_menu():
     builder = InlineKeyboardBuilder()
-    builder.button(text="🚀 Kasb tanlash (AI)", callback_data="ai_career")
-    builder.button(text="🧘 Psixologik ko'mak", callback_data="ai_psycho")
-    builder.button(text="👨‍👩‍👧 Ota-onalar bo'limi", callback_data="parents")
-    builder.button(text="📚 Foydali resurslar", callback_data="links")
-    builder.button(text="💡 Taklif yuborish", callback_data="suggest")
-    builder.adjust(2)
+    builder.button(text="🎯 Kasb tanlash", callback_data="info_career")
+    builder.button(text="🧠 Ruhiy ko'mak", callback_data="info_psycho")
+    builder.button(text="📚 Foydali linklar", callback_data="info_links")
+    builder.adjust(1)
     return builder.as_markup()
 
-# --- BOT LOGIKASI ---
+# --- AI JAVOBLAR MANTIQI ---
+def get_ai_answer(user_message: str):
+    msg = user_message.lower()
+    
+    # 1. Kasbga oid savollar
+    if any(word in msg for word in ["kasb", "universitet", "yo'nalish", "qayerga o'qish", "imtihon"]):
+        return ("🎯 **AI Maslahati:** Kelajakda IT, muhandislik va biotexnologiya sohalari juda muhim. "
+                "Sizga matematika yoqsa — dasturlashni, ijod yoqsa — dizaynni tavsiya qilaman. "
+                "Aniqroq ma'lumot uchun qiziqishlaringizni ayting.")
+
+    # 2. Psixologik savollar
+    elif any(word in msg for word in ["stress", "hayajon", "qo'rqinch", "uyqu", "charchadim", "tushkunlik"]):
+        return ("🧠 **AI Ruhiy ko'mak:** Imtihon oldidan hayajonlanish normal holat. "
+                "Har kuni kamida 8 soat uxlashga harakat qiling va darslar orasida 10 daqiqa toza havoda yuring. "
+                "O'zingizga ishonish muvaffaqiyatning yarmi!")
+
+    # 3. Salomlashish
+    elif any(word in msg for word in ["salom", "assalom", "qalaysiz"]):
+        return "Vaalaykum assalom! Men AI-Maslahatchiman. Sizga qanday yordam bera olaman?"
+
+    # 4. Agar javob topilmasa
+    return None
+
+# --- BOT HANDLERLARI ---
 @dp.message(Command("start"))
 async def start_cmd(message: types.Message):
-    welcome_text = (
-        f"👋 **Assalomu alaykum, {message.from_user.first_name}!**\n\n"
-        "Men 6-maktabning **Intellektual Yordamchisi**man. "
-        "Sizga kasb tanlash, o'qish va psixologik masalalarda "
-        "darhol javob bera olaman.\n\n"
-        "👇 Kerakli bo'limni tanlang:"
-    )
-    await message.answer(welcome_text, parse_mode="Markdown", reply_markup=main_menu_inline())
+    await message.answer(f"🌟 Salom {message.from_user.first_name}! Men AI-Maslahatchiman. "
+                         "Menga savolingizni yozing yoki tugmalardan foydalaning.", 
+                         reply_markup=main_menu())
 
-# AI Javoblar bazasi (Sizning o'rningizga bot javob beradi)
-@dp.callback_query(F.data.startswith("ai_"))
-async def ai_response(callback: types.CallbackQuery):
-    if callback.data == "ai_career":
-        text = ("🎯 **Kasb tanlash bo'yicha tavsiya:**\n\n"
-                "Hozirda IT, Robototexnika va Sun'iy intellekt sohalari eng istiqbolli hisoblanadi. "
-                "Agar sizga matematika yoqsa — Dasturlashni, chizmachilik yoqsa — Dizaynni tanlang.\n\n"
-                "Aniqroq maslahat uchun qiziqishlaringizni yozib qoldiring!")
-    elif callback.data == "ai_psycho":
-        text = ("🧠 **Ruhshunos maslahati:**\n\n"
-                "Imtihon oldidan hayajonlanyapsizmi? Bu tabiiy! "
-                "Kuniga 8 soat uxlashni va har 45 minut darsdan keyin dam olishni unutmang. "
-                "O'zingizga ishonish — muvaffaqiyatning yarmi!")
-    
-    await callback.message.edit_text(text, parse_mode="Markdown", reply_markup=main_menu_inline())
+@dp.callback_query(F.data.startswith("info_"))
+async def callbacks(callback: types.CallbackQuery):
+    if callback.data == "info_career":
+        text = "Kasb tanlash bo'yicha savolingizni yozib yuboring (masalan: 'qaysi kasb yaxshi?')."
+    elif callback.data == "info_psycho":
+        text = "Ruhiy holatingiz haqida yozing (masalan: 'imtihondan qo'rqyapman')."
+    else:
+        text = "Foydali saytlar: my.uzbmb.uz, khanacademy.org"
+    await callback.message.answer(text)
     await callback.answer()
 
-@dp.callback_query(F.data == "parents")
-async def parents_info(callback: types.CallbackQuery):
-    text = ("👨‍👩‍👧 **Ota-onalar uchun:**\n\n"
-            "Farzandingizning qobiliyatini yoshligidan kuzating. "
-            "Uni o'zi yoqtirmagan kasbga majburlash kelajakda uning baxtsiz bo'lishiga sabab bo'lishi mumkin. "
-            "Ko'proq muloqot qiling!")
-    await callback.message.edit_text(text, parse_mode="Markdown", reply_markup=main_menu_inline())
-
-@dp.callback_query(F.data == "links")
-async def links_info(callback: types.CallbackQuery):
-    text = ("📚 **Foydali manbalar:**\n\n"
-            "• [My.uzbmb.uz](https://my.uzbmb.uz) - Imtihonlar\n"
-            "• [Khan Academy](https://uz.khanacademy.org) - Onlayn darslar\n"
-            "• [Coursera](https://coursera.org) - Xalqaro kurslar")
-    await callback.message.edit_text(text, parse_mode="Markdown", reply_markup=main_menu_inline(), disable_web_page_preview=True)
-
-# Taklif yuborish (Sizga keladigan qism)
-@dp.callback_query(F.data == "suggest")
-async def suggest_start(callback: types.CallbackQuery):
-    await callback.message.answer("Sinfingiz va taklifingizni yozing. Otabek Botirov uni shaxsan ko'rib chiqadi.")
-    await callback.answer()
-
-# Umumiy xabarlarni qabul qilish va Admin'ga bildirish
 @dp.message()
-async def handle_all_messages(message: types.Message):
-    # Bu yerda bot o'quvchi bilan muloqot qiladi
-    await message.reply("Xabaringiz qabul qilindi. Men uni tahlil qilyapman...")
+async def ai_message_handler(message: types.Message):
+    answer = get_ai_answer(message.text)
     
-    # Adminga hisobot yuborish
-    report = (f"👤 **Foydalanuvchi:** {message.from_user.full_name}\n"
-              f"💬 **Xabar:** {message.text}\n"
-              f"🤖 *Bot avtomatik javob rejimida.*")
-    await bot.send_message(ADMIN_ID, report, parse_mode="Markdown")
+    if answer:
+        # Bot mustaqil javob beradi
+        await message.answer(f"🤖 **AI Javobi:**\n\n{answer}", parse_mode="Markdown")
+        
+        # Adminga hisobot
+        report = (f"👤 **O'quvchi:** {message.from_user.full_name}\n"
+                  f"💬 **Savol:** {message.text}\n"
+                  f"✅ **Bot javob berdi.**")
+        await bot.send_message(ADMIN_ID, report)
+    else:
+        # Bot javob topa olmasa, sizga yo'naltiradi
+        await message.answer("🤔 Bu savolga aniq javob bera olmayman. Xabaringizni Otabek Botirovga yubordim.")
+        await bot.send_message(ADMIN_ID, f"📩 **YANGI MUROJAAT (Bot javob topolmadi):**\n\n"
+                                         f"👤 Kimdan: {message.from_user.full_name}\n"
+                                         f"📝 Matn: {message.text}")
 
 async def main():
     app = web.Application()
