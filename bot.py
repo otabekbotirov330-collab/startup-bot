@@ -110,7 +110,7 @@ async def school_ai_handler(message: types.Message):
     else:
         await message.answer("🤖 *Maktab maslahatchisi tahlili:* Xabaringiz qabul qilindi. Otabek Botirovga yubordim.")
         await bot.send_message(ADMIN_ID, f"📩 {message.from_user.full_name}: {message.text}")
-
+ 
 async def main():
     app = web.Application()
     app.router.add_get("/", handle)
